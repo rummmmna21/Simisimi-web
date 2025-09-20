@@ -1,14 +1,3 @@
-Perfect! Ei holo ready-to-copy App.js jeita tui just paste kore use korte parbe. Sob requested features included:
-
-Messenger page fully mobile-messenger style
-
-Bot profile pic dekhbe (choto, gol)
-
-Teach buttons press effect + Multiple teach Done popup (3 sec animation)
-
-Single teach input stable
-
-
 /* App.js - BabyAI 3-Page Dashboard with Messenger + Effects */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -340,7 +329,7 @@ export default function App() {
         )}
 
         <footer className="mt-6 text-center text-xs text-gray-500">
-          Made with ❤️ by rX Abdullah
+          @2025 rX Abdullah
         </footer>
       </div>
     </div>
