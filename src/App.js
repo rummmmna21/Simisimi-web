@@ -1,4 +1,15 @@
-/* App.js - BabyAI Dashboard with Tap System & Messenger */
+Perfect! Ekhane full updated App.js ready-to-copy, jekhane sob feature include kora:
+
+Messenger fully Facebook Messenger style (tumi + bot)
+
+Bot profile pic + active status API page
+
+Multi/Single teach, toast, bottom tap buttons, results, activity log
+
+Responsive & mobile-friendly
+
+
+/* App.js - BabyAI Dashboard with Tap System, Messenger & Bot Status */
 
 import React, { useState, useEffect, useRef } from "react";
 
@@ -7,7 +18,7 @@ const DEFAULT_API = "https://rx-simisimi-api-tllc.onrender.com";
 export default function App() {
   const [currentPage, setCurrentPage] = useState("teach"); // teach | chat | api
   const [apiBase, setApiBase] = useState(localStorage.getItem("babyai_api_base") || DEFAULT_API);
-  const [status, setStatus] = useState({ taughtQuestions: 0, storedReplies: 0, developer: "rX Abdullah" });
+  const [status, setStatus] = useState({ taughtQuestions: 0, storedReplies: 0, developer: "rX Abdullah", active: true, lastActiveMinutes: 0 });
   const [teachInput, setTeachInput] = useState("");
   const [askInput, setAskInput] = useState("");
   const [answerInput, setAnswerInput] = useState("");
@@ -33,6 +44,8 @@ export default function App() {
           taughtQuestions: data.taughtQuestions ?? prev.taughtQuestions,
           storedReplies: data.storedReplies ?? prev.storedReplies,
           developer: data.developer ?? prev.developer,
+          active: data.active ?? true,
+          lastActiveMinutes: data.lastActiveMinutes ?? prev.lastActiveMinutes,
         }));
       } catch {}
     };
@@ -222,30 +235,46 @@ export default function App() {
           {messages.map((m,i)=>(
             <div key={i} className="flex items-start gap-2">
               {m.bot && <img src="https://i.imgur.com/HPWnQI1.jpeg" alt="Bot" className="w-8 h-8 rounded-full"/>}
-              <div className={`p-2 rounded ${m.bot?'bg-gray-200 self-start':'bg-yellow-200 self-end'} text-sm break-words max-w-[80%]`}>
-                {m.bot?m.bot:m.user}
+              <div className={`p-2 rounded text-sm break-words max-w-[80%] ${m.bot?'bg-gray-200 self-start':'bg-blue-500 self-end text-white'}`}>
+                {m.bot ? m.bot : m.user}
               </div>
             </div>
           ))}
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef}/>
         </div>
-
-        {/* Input */}
         <div className="flex gap-2 mt-2">
-          <input placeholder="Type a message..." value={askInput} onChange={e=>setAskInput(e.target.value)} className="flex-1 border rounded p-2 text-sm"/>
-          <button onClick={handleAsk} disabled={loading} className="px-3 py-2 rounded bg-yellow-600 text-white text-sm">Send</button>
+          <input puplaceholderType a message..."
+            value={askInput}
+            onChange={e => setAskInput(e.target.value)}
+            className="flex-1 border rounded p-2 text-sm"
+          />
+          <button
+            onClick={handleAsk}
+            disabled={loading}
+            className="px-3 py-2 rounded bg-blue-600 text-white text-sm"
+          >
+            Send
+          </button>
         </div>
       </section>
     );
 
     if (currentPage === "api") return (
-      <section className="bg-white rounded-2xl shadow p-6">
-        <h2 className="text-lg font-semibold mb-2">API Info</h2>
-        <div className="text-sm space-y-1">
-          <div>📝 Teached Questions: {status.taughtQuestions}</div>
-          <div>📦 Stored Replies: {status.storedReplies}</div>
-          <div>👤 Developer: {status.developer}</div>
+      <section className="bg-white rounded-2xl shadow p-6 flex flex-col gap-4 items-center">
+        <h2 className="text-lg font-semibold mb-2">🤖 Bot Status</h2>
+        <img
+          src="https://i.imgur.com/HPWnQI1.jpeg"
+          alt="Bot"
+          className="w-20 h-20 rounded-full mb-2"
+        />
+        <div className="text-sm mb-1">
+          {status.active
+            ? "🟢 Active now"
+            : `⚪ Active ${status.lastActiveMinutes} minute(s) ago`}
         </div>
+        <div className="text-sm mb-1">📝 Teached Questions: {status.taughtQuestions}</div>
+        <div className="text-sm mb-1">📦 Stored Replies: {status.storedReplies}</div>
+        <div className="text-sm mb-1">👤 Developer: {status.developer}</div>
       </section>
     );
   };
@@ -264,8 +293,14 @@ export default function App() {
 
         {/* Bottom Tap Buttons */}
         <div className="md:col-span-3 fixed bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-white rounded-full shadow p-1 z-50">
-          {pageButtons.map(b=>(
-            <button key={b.key} onClick={()=>setCurrentPage(b.key)} className={`px-4 py-2 rounded-full ${currentPage===b.key?'bg-indigo-600 text-white':'bg-gray-200 text-gray-800'} text-sm`}>
+          {pageButtons.map(b => (
+            <button
+              key={b.key}
+              onClick={() => setCurrentPage(b.key)}
+              className={`px-4 py-2 rounded-full ${
+                currentPage === b.key ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-800'
+              } text-sm`}
+            >
               {b.label}
             </button>
           ))}
@@ -273,9 +308,15 @@ export default function App() {
       </main>
 
       {/* Toast */}
-      {toast && <div className={`fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded shadow ${toast.type==='success'?'bg-green-500 text-white':'bg-red-500 text-white'}`}>
-        {toast.msg}
-      </div>}
+      {toast && (
+        <div
+          className={`fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded shadow ${
+            toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+          }`}
+        >
+          {toast.msg}
+        </div>
+      )}
     </div>
   );
-}
+          }
