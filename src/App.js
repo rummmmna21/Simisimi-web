@@ -232,11 +232,12 @@ export default function App() {
           <div ref={messagesEndRef}/>
         </div>
         <div className="flex gap-2 mt-2">
-          <input puplaceholderType a message..."
-            value={askInput}
-            onChange={e => setAskInput(e.target.value)}
-            className="flex-1 border rounded p-2 text-sm"
-          />
+          <input
+  placeholder="Type a message..."
+  value={askInput}
+  onChange={e => setAskInput(e.target.value)}
+  className="flex-1 border rounded p-2 text-sm"
+/>
           <button
             onClick={handleAsk}
             disabled={loading}
