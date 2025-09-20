@@ -1,4 +1,5 @@
 /* App.js - BabyAI Dashboard with Tap System, Messenger & Bot Status */
+
 import React, { useState, useEffect, useRef } from "react";
 
 const DEFAULT_API = "https://rx-simisimi-api-tllc.onrender.com";
@@ -6,13 +7,7 @@ const DEFAULT_API = "https://rx-simisimi-api-tllc.onrender.com";
 export default function App() {
   const [currentPage, setCurrentPage] = useState("teach"); // teach | chat | api
   const [apiBase, setApiBase] = useState(localStorage.getItem("babyai_api_base") || DEFAULT_API);
-  const [status, setStatus] = useState({
-    taughtQuestions: 0,
-    storedReplies: 0,
-    developer: "rX Abdullah",
-    active: true,
-    lastActiveMinutes: 0
-  });
+  const [status, setStatus] = useState({ taughtQuestions: 0, storedReplies: 0, developer: "rX Abdullah", active: true, lastActiveMinutes: 0 });
   const [teachInput, setTeachInput] = useState("");
   const [askInput, setAskInput] = useState("");
   const [answerInput, setAnswerInput] = useState("");
@@ -78,10 +73,7 @@ export default function App() {
 
     for (let t of teaches) {
       const parts = t.split("-").map(x => x.trim());
-      if (parts.length < 2) {
-        localResults.push({ text: t, ok: false, msg: "Invalid format" });
-        continue;
-      }
+      if (parts.length < 2) { localResults.push({ text: t, ok: false, msg: "Invalid format" }); continue; }
       const ask = parts[0];
       const ans = parts.slice(1).join(" - ");
       try {
@@ -193,7 +185,8 @@ export default function App() {
             </button>
           </div>
         </form>
-{/* Single Teach */}
+
+        {/* Single Teach */}
         <div className="flex gap-2 flex-wrap mt-2">
           <input placeholder="Ask" value={askInput} onChange={e => setAskInput(e.target.value)} className="flex-1 border rounded p-2 text-sm" />
           <input placeholder="Ans" value={answerInput} onChange={e => setAnswerInput(e.target.value)} className="flex-1 border rounded p-2 text-sm" />
@@ -240,15 +233,15 @@ export default function App() {
         </div>
         <div className="flex gap-2 mt-2">
           <input
-            placeholder="Type a message..."
-            value={askInput}
-            onChange={e => setAskInput(e.target.value)}
-            className="flex-1 border rounded p-2 text-sm"
-            onKeyDown={e => { if(e.key==='Enter') handleAsk(); }}
-          />
+  placeholder="Type a message..."
+  value={askInput}
+  onChange={e => setAskInput(e.target.value)}
+  className="flex-1 border rounded p-2 text-sm"
+/>
           <button
             onClick={handleAsk}
-            className="px-3 py-2 bg-blue-600 text-white rounded text-sm"
+            disabled={loading}
+            className="px-3 py-2 rounded bg-blue-600 text-white text-sm"
           >
             Send
           </button>
@@ -257,56 +250,63 @@ export default function App() {
     );
 
     if (currentPage === "api") return (
-      <section className="bg-white rounded-2xl shadow p-4 flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">🔗 API Info & Bot Status</h2>
-        <div className="flex items-center gap-2">
-          <img src="https://i.imgur.com/HPWnQI1.jpeg" className="w-10 h-10 rounded-full"/>
-          <div>
-            <div className="font-medium">{status.developer} Bot</div>
-            <div className="text-xs text-gray-600">
-              {status.active ? "Active now" : `Last active ${status.lastActiveMinutes} min ago`}
-            </div>
-          </div>
+      <section className="bg-white rounded-2xl shadow p-6 flex flex-col gap-4 items-center">
+        <h2 className="text-lg font-semibold mb-2">🤖 Bot Status</h2>
+        <img
+          src="https://i.imgur.com/HPWnQI1.jpeg"
+          alt="Bot"
+          className="w-20 h-20 rounded-full mb-2"
+        />
+        <div className="text-sm mb-1">
+          {status.active
+            ? "🟢 Active now"
+            : `⚪ Active ${status.lastActiveMinutes} minute(s) ago`}
         </div>
-        <div className="mt-2 text-sm">
-          <div>Taught Questions: {status.taughtQuestions}</div>
-          <div>Stored Replies: {status.storedReplies}</div>
-          <div>API Base: {apiBase}</div>
-          <input
-            placeholder="Change API Base"
-            value={apiBase}
-            onChange={e => setApiBase(e.target.value)}
-            className="mt-2 border rounded p-2 text-sm w-full"
-          />
-        </div>
+        <div className="text-sm mb-1">📝 Teached Questions: {status.taughtQuestions}</div>
+        <div className="text-sm mb-1">📦 Stored Replies: {status.storedReplies}</div>
+        <div className="text-sm mb-1">👤 Developer: {status.developer}</div>
       </section>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 flex flex-col gap-4">
-      {/* Page Render */}
-      {renderPage()}
+    <div className="min-h-screen bg-gray-50 p-4 flex flex-col">
+      <header className="flex justify-between items-center mb-2">
+        <h1 className="text-2xl font-bold">🌟 Baby AI Dashboard</h1>
+      </header>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-4 left-0 right-0 flex justify-around bg-white p-2 rounded-t-2xl shadow-md">
-        {pageButtons.map(btn => (
-          <button
-            key={btn.key}
-            onClick={() => setCurrentPage(btn.key)}
-            className={`px-4 py-2 rounded ${currentPage===btn.key?'bg-blue-600 text-white':'bg-gray-200'}`}
-          >
-            {btn.label}
-          </button>
-        ))}
-      </div>
+      <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Left corner */}
+        <div className="flex flex-col gap-4">
+          {renderPage()}
+        </div>
+
+        {/* Bottom Tap Buttons */}
+        <div className="md:col-span-3 fixed bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-white rounded-full shadow p-1 z-50">
+          {pageButtons.map(b => (
+            <button
+              key={b.key}
+              onClick={() => setCurrentPage(b.key)}
+              className={`px-4 py-2 rounded-full ${
+                currentPage === b.key ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-800'
+              } text-sm`}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+      </main>
 
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded shadow ${toast.type==='success'?'bg-green-500 text-white':'bg-red-500 text-white'}`}>
+        <div
+          className={`fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded shadow ${
+            toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+          }`}
+        >
           {toast.msg}
         </div>
       )}
     </div>
   );
-}
+}                                     
