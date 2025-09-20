@@ -1,14 +1,3 @@
-Perfect! Ekhane full updated App.js ready-to-copy, jekhane sob feature include kora:
-
-Messenger fully Facebook Messenger style (tumi + bot)
-
-Bot profile pic + active status API page
-
-Multi/Single teach, toast, bottom tap buttons, results, activity log
-
-Responsive & mobile-friendly
-
-
 /* App.js - BabyAI Dashboard with Tap System, Messenger & Bot Status */
 
 import React, { useState, useEffect, useRef } from "react";
