@@ -9,8 +9,9 @@ export default function App() {
   const [apiBase, setApiBase] = useState(localStorage.getItem("babyai_api_base") || DEFAULT_API);
   const [status, setStatus] = useState({ taughtQuestions: 0, storedReplies: 0, developer: "rX Abdullah", active: true, lastActiveMinutes: 0 });
   const [teachInput, setTeachInput] = useState("");
-  const [askInput, setAskInput] = useState("");
+  const [askInput, setAskInput] = useState(""); // Teach input
   const [answerInput, setAnswerInput] = useState("");
+  const [chatInput, setChatInput] = useState(""); // Messenger input
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activityLog, setActivityLog] = useState([]);
@@ -123,20 +124,20 @@ export default function App() {
     setLoading(false);
   };
 
-  // Ask API
+  // Ask API - Messenger
   const handleAsk = async () => {
-    if (!askInput.trim()) return showToast("Message empty!", "error");
+    if (!chatInput.trim()) return showToast("Message empty!", "error");
     setLoading(true);
     try {
       const q = new URL(`${apiBase}/simsimi`);
-      q.searchParams.set("text", askInput.trim());
+      q.searchParams.set("text", chatInput.trim());
       const res = await fetch(q.toString());
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const reply = data.response || JSON.stringify(data);
-      pushLog(`Ask: ${askInput} → Reply: ${reply}`);
-      setMessages(prev => [...prev, { user: askInput, bot: reply }]);
-      setAskInput("");
+      pushLog(`Ask: ${chatInput} → Reply: ${reply}`);
+      setMessages(prev => [...prev, { user: chatInput, bot: reply }]);
+      setChatInput("");
     } catch (err) {
       pushLog(`Ask error: ${err.message}`);
       showToast("Ask error", "error");
@@ -222,22 +223,29 @@ export default function App() {
       <section className="bg-white rounded-2xl shadow p-2 flex flex-col h-[600px]">
         <div className="flex-1 overflow-y-auto flex flex-col gap-2 p-2">
           {messages.map((m,i)=>(
-            <div key={i} className="flex items-start gap-2">
-              {m.bot && <img src="https://i.imgur.com/HPWnQI1.jpeg" alt="Bot" className="w-8 h-8 rounded-full"/>}
-              <div className={`p-2 rounded text-sm break-words max-w-[80%] ${m.bot?'bg-gray-200 self-start':'bg-blue-500 self-end text-white'}`}>
-                {m.bot ? m.bot : m.user}
-              </div>
+            <div key={i} className="flex flex-col gap-1">
+              {m.user && (
+                <div className="self-end bg-blue-500 text-white p-2 rounded max-w-[80%] break-words">
+                  {m.user}
+                </div>
+              )}
+              {m.bot && (
+                <div className="self-start bg-gray-200 p-2 rounded max-w-[80%] break-words flex items-start gap-2">
+                  <img src="https://i.imgur.com/HPWnQI1.jpeg" alt="Bot" className="w-6 h-6 rounded-full"/>
+                  <span>{m.bot}</span>
+                </div>
+              )}
             </div>
           ))}
           <div ref={messagesEndRef}/>
         </div>
         <div className="flex gap-2 mt-2">
           <input
-  placeholder="Type a message..."
-  value={askInput}
-  onChange={e => setAskInput(e.target.value)}
-  className="flex-1 border rounded p-2 text-sm"
-/>
+            placeholder="Type a message..."
+            value={chatInput}
+            onChange={e => setChatInput(e.target.value)}
+            className="flex-1 border rounded p-2 text-sm"
+          />
           <button
             onClick={handleAsk}
             disabled={loading}
@@ -309,4 +317,4 @@ export default function App() {
       )}
     </div>
   );
-}                                     
+              }
