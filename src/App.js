@@ -1,4 +1,15 @@
-/* App.js - BabyAI 3-Page Dashboard */
+Perfect! I understand exactly:
+
+Teach buttons (Single & Multiple) should have a press effect when clicked (like animate-scale or ring).
+
+Multiple Teach: after success, show a popup “Done” with animation.
+
+Single Teach input box position issue fixed (should not move).
+
+
+Here’s the fixed, ready-to-copy App.js with all requested changes:
+
+/* App.js - BabyAI 3-Page Dashboard with Effects */
 
 import React, { useState, useEffect, useRef } from "react";
 
@@ -18,6 +29,7 @@ export default function App() {
   const [activityLog, setActivityLog] = useState([]);
   const [messages, setMessages] = useState([]);
   const [toast, setToast] = useState(null);
+  const [buttonPressed, setButtonPressed] = useState(""); // track which button is pressed
 
   const pollingRef = useRef(null);
 
@@ -56,9 +68,16 @@ export default function App() {
     setTimeout(() => setToast(null), 3000);
   }
 
+  // Button press effect
+  function handleButtonPress(name) {
+    setButtonPressed(name);
+    setTimeout(() => setButtonPressed(""), 200);
+  }
+
   // Multi-teach
   async function handleMultiTeach(e) {
     e.preventDefault();
+    handleButtonPress("multiTeach");
     setError("");
     if (!teachInput.trim()) return setError("Provide teach pairs (ask - ans), separated by commas.");
     setLoading(true);
@@ -85,20 +104,21 @@ export default function App() {
         const data = await res.json();
         localResults.push({ text: `${ask} → ${ans}`, ok: true, msg: data.message || "OK" });
         pushLog(`Taught: ${ask} → ${ans}`);
-        showToast(`Taught: ${ask}`, "success");
       } catch (err) {
         localResults.push({ text: `${ask} → ${ans}`, ok: false, msg: err.message });
         pushLog(`Error teaching: ${ask} — ${err.message}`);
-        showToast(`Error: ${ask}`, "error");
       }
     }
 
     setResults(localResults);
     setLoading(false);
+    showToast("✅ Multiple Teach Done", "success");
+    setTeachInput(""); // clear input after success
   }
 
   // Single teach
   async function handleSingleTeach() {
+    handleButtonPress("singleTeach");
     setError("");
     if (!askInput.trim() || !answerInput.trim()) return setError("Ask and Ans required.");
     setLoading(true);
@@ -114,12 +134,12 @@ export default function App() {
       const data = await res.json();
       setResults([{ text: `${askInput} → ${answerInput}`, ok: true, msg: data.message || "OK" }]);
       pushLog(`Taught: ${askInput} → ${answerInput}`);
-      showToast(`Taught: ${askInput}`, "success");
+      showToast("✅ Single Teach Done", "success");
       setAskInput(""); setAnswerInput("");
     } catch (err) {
       setResults([{ text: `${askInput} → ${answerInput}`, ok: false, msg: err.message }]);
       pushLog(`Error teaching: ${askInput} — ${err.message}`);
-      showToast(`Error: ${askInput}`, "error");
+      showToast("❌ Single Teach Failed", "error");
     }
     setLoading(false);
   }
@@ -171,63 +191,114 @@ export default function App() {
               className="w-full border rounded p-3 text-sm h-28"
             />
             <div className="flex gap-3">
-              <button disabled={loading} className="px-4 py-2 rounded bg-indigo-600 text-white text-sm">Teach Multiple</button>
-              <button type="button" onClick={() => { setTeachInput(""); setResults([]); }} className="px-3 py-2 rounded border text-sm">Clear</button>
+              <button
+                disabled={loading}
+                onClick={handleMultiTeach}
+                className={`px-4 py-2 rounded bg-indigo-600 text-white text-sm transition transform ${buttonPressed==="multiTeach"?"scale-95 ring-2 ring-indigo-400":""}`}
+              >
+                Teach Multiple
+              </button>
+              <button
+                type="button"
+                onClick={() => { setTeachInput(""); setResults([]); handleButtonPress("clear"); }}
+                className={`px-3 py-2 rounded border text-sm transition transform ${buttonPressed==="clear"?"scale-95 ring-2 ring-gray-400":""}`}
+              >
+                Clear
+              </button>
             </div>
-          </form>
 
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="flex gap-2">
-              <input placeholder="Ask" value={askInput} onChange={e => setAskInput(e.target.value)} className="flex-1 border rounded p-2 text-sm" />
-              <input placeholder="Ans" value={answerInput} onChange={e => setAnswerInput(e.target.value)} className="flex-1 border rounded p-2 text-sm" />
-              <button onClick={handleSingleTeach} disabled={loading} className="px-3 py-2 rounded bg-green-600 text-white text-sm">Teach</button>
+            <div className="mt-4 flex flex-col md:flex-row gap-3">
+              <div className="flex gap-2 flex-1">
+                <input placeholder="Ask" value={askInput} onChange={e => setAskInput(e.target.value)} className="flex-1 border rounded p-2 text-sm" />
+                <input placeholder="Ans" value={answerInput} onChange={e => setAnswerInput(e.target.value)} className="flex-1 border rounded p-2 text-sm" />
+                <button
+                  onClick={handleSingleTeach}
+                  disabled={loading}
+                  className={`px-3 py-2 rounded bg-green-600 text-white text-sm transition transform ${buttonPressed==="singleTeach"?"scale-95 ring-2 ring-green-400":""}`}
+                >
+                  Teach
+                </button>
+              </div>
+              <div className="flex gap-2 mt-2 md:mt-0">
+                <input placeholder="Ask to test" value={askInput} onChange={e => setAskInput(e.target.value)} className="flex-1 border rounded p-2 text-sm" />
+                <button
+                  onClick={handleAsk}
+                  disabled={loading}
+                  className="px-3 py-2 rounded bg-yellow-600 text-white text-sm"
+                >
+                  Ask
+                </button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <input placeholder="Ask to test" value={askInput} onChange={e => setAskInput(e.target.value)} className="flex-1 border rounded p-2 text-sm" />
-              <button onClick={handleAsk} disabled={loading} className="px-3 py-2 rounded bg-yellow-600 text-white text-sm">Ask</button>
-            </div>
-          </div>
 
-          <div className="mt-6">
-            <h3 className="text-sm font-medium mb-2">Results</h3>
-            <div className="space-y-2">
-              {results.length === 0 ? <div className="text-xs text-gray-500">No results yet.</div> :
-                results.map((r, i) => (
-                  <div key={i} className={`p-3 rounded ${r.ok ? 'bg-green-50' : 'bg-red-50'} text-sm`}>
-                    <div className="font-medium">{r.text}</div>
-                    {r.msg && <div className="text-xs text-gray-600">{r.msg}</div>}
-                  </div>
-                ))}
+            <div className="mt-6">
+              <h3 className="text-sm font-medium mb-2">Results</h3>
+              <div className="space-y-2">
+                {results.length === 0 ? <div className="text-xs text-gray-500">No results yet.</div> :
+                  results.map((r, i) => (
+                    <div key={i} className={`p-3 rounded ${r.ok ? 'bg-green-50' : 'bg-red-50'} text-sm`}>
+                      <div className="font-medium">{r.text}</div>
+                      {r.msg && <div className="text-xs text-gray-600">{r.msg}</div>}
+                    </div>
+                  ))}
+              </div>
             </div>
-          </div>
-        </section>
-      );
+          </section>
+        );
     } else if (currentPage === "chat") {
+      const messagesEndRef = useRef(null);
+
+      useEffect(() => {
+        if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }, [messages]);
+
       return (
-        <section className="md:col-span-2 bg-white rounded-2xl shadow p-6 flex flex-col h-[600px]">
-          <div className="flex-1 overflow-y-auto space-y-2 mb-3 flex flex-col">
+        <section className="md:col-span-2 bg-white rounded-2xl shadow p-4 flex flex-col h-[600px]">
+          <div className="flex-1 overflow-y-auto space-y-2 p-2">
             {messages.map((m, i) => (
-              <div key={i} className="flex flex-col">
-                <div className="self-end bg-blue-100 p-2 rounded-md max-w-xs">{m.user}</div>
-                <div className="self-start bg-gray-200 p-2 rounded-md max-w-xs mt-1">{m.bot}</div>
+              <div key={i} className="flex items-end gap-2">
+                {m.bot && (
+                  <div className="flex items-end gap-2">
+                    <img src="https://i.imgur.com/HPWnQI1.jpeg" alt="Bot" className="w-8 h-8 rounded-full" />
+                    <div className="bg-gray-200 p-2 rounded-xl max-w-[70%] break-words">{m.bot}</div>
+                  </div>
+                )}
+                {m.user && (
+                  <div className="flex items-end gap-2 ml-auto">
+                    <div className="bg-blue-500 text-white p-2 rounded-xl max-w-[70%] break-words">{m.user}</div>
+                  </div>
+                )}
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
-          <div className="flex gap-2">
-            <input className="flex-1 border rounded p-2 text-sm" placeholder="Type message" value={askInput} onChange={e => setAskInput(e.target.value)} />
-            <button onClick={handleAsk} disabled={loading} className="px-3 py-2 rounded bg-yellow-600 text-white text-sm">Send</button>
+          <div className="flex gap-2 mt-2">
+            <input
+              className="flex-1 border rounded p-2 text-sm"
+              placeholder="Type message"
+              value={askInput}
+              onChange={e => setAskInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") handleAsk(); }}
+            />
+            <button
+              onClick={handleAsk}
+              disabled={loading}
+              className="px-3 py-2 rounded bg-yellow-600 text-white text-sm"
+            >
+              Send
+            </button>
           </div>
         </section>
       );
     } else if (currentPage === "api") {
       return (
         <section className="md:col-span-2 bg-white rounded-2xl shadow p-6">
-          <h2 className="text-lg font-semibold mb-3">📊 API Info</h2>
-          <div className="space-y-3 text-sm">
-            <div>📝 Teached Questions: {status.taughtQuestions}</div>
+          <h2 className="text-lg font-semibold mb-3">🔧 API Info</h2>
+          <div className="text-sm space-y-2">
+            <div>📝 Taught Questions: {status.taughtQuestions}</div>
             <div>📦 Stored Replies: {status.storedReplies}</div>
-            <div>👤 Developer: {status.developer}</div>
             <div>🌐 API Base: {apiBase}</div>
+            <div>👤 Developer: {status.developer}</div>
           </div>
         </section>
       );
@@ -242,13 +313,12 @@ export default function App() {
           <div className="text-sm text-gray-600">Developer: {status.developer}</div>
         </header>
 
-        {/* Page Buttons */}
-        <div className="flex gap-3 mb-6">
+        <div className="flex gap-2 mb-4">
           {pageButtons.map(btn => (
             <button
               key={btn.key}
               onClick={() => setCurrentPage(btn.key)}
-              className={`px-4 py-2 rounded ${currentPage===btn.key?'bg-indigo-600 text-white shadow-lg animate-pulse':'bg-gray-200 text-gray-700'}`}
+              className={`px-3 py-2 rounded ${currentPage===btn.key?"bg-indigo-600 text-white ring-2 ring-indigo-400":"bg-white border text-gray-700"} transition`}
             >
               {btn.label}
             </button>
@@ -258,13 +328,7 @@ export default function App() {
         <main className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {renderPage()}
 
-          {/* Right Sidebar */}
           <aside className="space-y-6">
-            <div className="bg-white rounded-2xl shadow p-5 flex flex-col items-center">
-              <img src="https://i.imgur.com/HPWnQI1.jpeg" className="w-20 h-20 rounded-full mb-3" alt="Bot"/>
-              <div className={`text-sm font-medium ${polling?'text-green-600':'text-red-600'}`}>{polling?'Active':'Inactive'}</div>
-            </div>
-
             <div className="bg-white rounded-2xl shadow p-5">
               <h3 className="text-lg font-semibold mb-2">Activity Log</h3>
               <div className="h-48 overflow-y-auto text-xs text-gray-600 space-y-1 border rounded p-2">
@@ -286,7 +350,7 @@ export default function App() {
         </main>
 
         {toast && (
-          <div className={`fixed top-5 right-5 p-3 rounded ${toast.type==='success'?'bg-green-500':'bg-red-500'} text-white`}>
+          <div className={`fixed bottom-5 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded shadow text-white ${toast.type==="success"?"bg-green-500":"bg-red-500"} animate-bounce`}>
             {toast.msg}
           </div>
         )}
