@@ -49,10 +49,12 @@ export default function App() {
   }, [apiBase]);
 
   // Activity log
-   const pushLog = line => {
-    const ts = new Date().toLocaleTimeString();
-    setActivityLog(prev => [`${ts} — ${line}`, ...prev].slice(0, 200));
-  };
+const pushLog = line => {
+  const ts = new Date().toLocaleTimeString();
+  const logLine = `${ts} — ${line}`;
+  console.log(logLine); // <-- live console-এ দেখাবে
+  setActivityLog(prev => [logLine, ...prev].slice(0, 200));
+};
 
   // Toast popup
   const showToast = (msg, type = "success") => {
