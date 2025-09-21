@@ -130,26 +130,35 @@ const pushLog = line => {
     setLoading(false);
   };
 
-  // Ask API - Messenger
   const handleAsk = async () => {
-    if (!chatInput.trim()) return showToast("Message empty!", "error");
-    setLoading(true);
-    try {
-      const q = new URL(`${apiBase}/simsimi`);
-      q.searchParams.set("text", chatInput.trim());
-      const res = await fetch(q.toString());
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const reply = data.response || JSON.stringify(data);
-      pushLog(`Ask: ${chatInput} → Reply: ${reply}`);
-      setMessages(prev => [...prev, { user: chatInput, bot: reply }]);
-      setChatInput("");
-    } catch (err) {
-      pushLog(`Ask error: ${err.message}`);
-      showToast("Ask error", "error");
+  if (!chatInput.trim()) return showToast("Message empty!", "error");
+  setLoading(true);
+  try {
+    const q = new URL(`${apiBase}/simsimi`);
+    q.searchParams.set("text", chatInput.trim());
+    const res = await fetch(q.toString());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const reply = data.response || JSON.stringify(data);
+
+    // Live log
+    pushLog(`🟢 User: ${chatInput}`);
+    pushLog(`🤖 Bot: ${reply}`);
+
+    // যদি teach হয়ে থাকে (Backend message থেকে detect করা যায়)
+    // উদাহরণ: যদি response message "✅ reply added!" থাকে
+    if (data.message?.includes("✅ reply added!")) {
+      pushLog(`📝 Teach/Auto-Teach detected: ${data.message}`);
     }
-    setLoading(false);
-  };
+
+    setMessages(prev => [...prev, { user: chatInput, bot: reply }]);
+    setChatInput("");
+  } catch (err) {
+    pushLog(`Ask error: ${err.message}`);
+    showToast("Ask error", "error");
+  }
+  setLoading(false);
+};
 
   // Scroll to bottom on new messages
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
