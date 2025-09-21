@@ -53,8 +53,8 @@ const pushLog = line => {
   const ts = new Date().toLocaleTimeString();
   const logLine = `${ts} — ${line}`;
   console.log(logLine); // <-- live console-এ দেখাবে
-  setActivityLog(prev => [logLine, ...prev].slice(0, 200));
- };
+  setActivityLog(prev => [logLine, ...prev].slice(0, 200)); // <-- UI তেও live update
+};
 
   // Toast popup
   const showToast = (msg, type = "success") => {
