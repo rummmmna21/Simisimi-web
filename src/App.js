@@ -20,7 +20,7 @@ export default function App() {
   const [buttonPressed, setButtonPressed] = useState("");
   const messagesEndRef = useRef(null);
 
-  // Manage Tab states
+  // Manage tab states
   const [manageData, setManageData] = useState([]);
   const [searchAsk, setSearchAsk] = useState("");
 
@@ -152,7 +152,7 @@ export default function App() {
   // Scroll to bottom on new messages
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  // ==== Manage Tab Functions ====
+  // Manage tab functions
   const fetchManageData = async () => {
     try {
       if (!searchAsk.trim()) {
@@ -177,7 +177,6 @@ export default function App() {
       q.searchParams.set("ans", ans);
       const res = await fetch(q.toString());
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
       showToast("Deleted reply", "success");
       fetchManageData();
     } catch {
@@ -210,29 +209,123 @@ export default function App() {
     { key: "teach", label: "Teach System" },
     { key: "chat", label: "Messenger" },
     { key: "api", label: "API Info" },
-    { key: "manage", label: "Manage Ask/Answer" }
+    { key: "manage", label: "Manage Ask/Answer" },
   ];
 
   // Render pages
   const renderPage = () => {
     if (currentPage === "teach") return (
-      /* আগের Teach System কোড এখানে থাকবে unchanged */
       <section className="bg-white rounded-2xl shadow p-6 flex flex-col gap-4">
-        {/* … আগের code 그대로 … */}
+        <h2 className="text-lg font-semibold mb-2">🧠 Teach System</h2>
+        {/* Multi Teach */}
+        <form onSubmit={handleMultiTeach} className="flex flex-col gap-2">
+          <textarea
+            placeholder="hello - Hi there, bye - Goodbye!"
+            value={teachInput}
+            onChange={e => setTeachInput(e.target.value)}
+            className="w-full border rounded p-3 text-sm h-28"
+          />
+          <div className="flex gap-2">
+            <button
+              disabled={loading}
+              onClick={handleMultiTeach}
+              className={`px-4 py-2 rounded bg-indigo-600 text-white text-sm transition transform ${buttonPressed==="multiTeach"?"scale-95 ring-2 ring-indigo-400":""}`}
+            >
+              Teach Multiple
+            </button>
+            <button
+              type="button"
+              onClick={() => { setTeachInput(""); setResults([]); handleButtonPress("clear"); }}
+              className={`px-3 py-2 rounded border text-sm transition transform ${buttonPressed==="clear"?"scale-95 ring-2 ring-gray-400":""}`}
+            >
+              Clear
+            </button>
+          </div>
+        </form>
+        {/* Single Teach */}
+        <div className="flex gap-2 flex-wrap mt-2">
+          <input placeholder="Ask" value={askInput} onChange={e => setAskInput(e.target.value)} className="flex-1 border rounded p-2 text-sm" />
+          <input placeholder="Ans" value={answerInput} onChange={e => setAnswerInput(e.target.value)} className="flex-1 border rounded p-2 text-sm" />
+          <button
+            onClick={handleSingleTeach}
+            disabled={loading}
+            className={`px-3 py-2 rounded bg-green-600 text-white text-sm transition transform ${buttonPressed==="singleTeach"?"scale-95 ring-2 ring-green-400":""}`}
+          >
+            Teach
+          </button>
+        </div>
+        {/* Results */}
+        <div className="mt-4 space-y-2">
+          {results.map((r,i)=>
+            <div key={i} className={`p-2 rounded ${r.ok?'bg-green-50':'bg-red-50'} text-sm`}>
+              <div className="font-medium">{r.text}</div>
+              {r.msg && <div className="text-xs text-gray-600">{r.msg}</div>}
+            </div>
+          )}
+        </div>
+        {/* Activity Log */}
+        <div className="mt-4 h-48 overflow-y-auto text-xs text-gray-600 space-y-1 border rounded p-2">
+          {activityLog.length===0 ? <div>No activity yet.</div> :
+            activityLog.map((line,i)=><div key={i}>{line}</div>)
+          }
+        </div>
       </section>
     );
 
     if (currentPage === "chat") return (
-      /* আগের Chat কোড এখানে থাকবে unchanged */
       <section className="bg-white rounded-2xl shadow p-2 flex flex-col h-[600px]">
-        {/* … আগের code 그대로 … */}
+        <div className="flex-1 overflow-y-auto flex flex-col gap-2 p-2">
+          {messages.map((m,i)=>(
+            <div key={i} className="flex flex-col gap-1">
+              {m.user && (
+                <div className="self-end bg-blue-500 text-white p-2 rounded max-w-[80%] break-words">
+                  {m.user}
+                </div>
+              )}
+              {m.bot && (
+                <div className="self-start bg-gray-200 p-2 rounded max-w-[80%] break-words flex items-start gap-2">
+                  <img src="https://i.imgur.com/HPWnQI1.jpeg" alt="Bot" className="w-6 h-6 rounded-full"/>
+                  <span>{m.bot}</span>
+                </div>
+              )}
+            </div>
+          ))}
+          <div ref={messagesEndRef}/>
+        </div>
+        <div className="flex gap-2 mt-2">
+          <input
+            placeholder="Type a message..."
+            value={chatInput}
+            onChange={e => setChatInput(e.target.value)}
+            className="flex-1 border rounded p-2 text-sm"
+          />
+          <button
+            onClick={handleAsk}
+            disabled={loading}
+            className="px-3 py-2 rounded bg-blue-600 text-white text-sm"
+          >
+            Send
+          </button>
+        </div>
       </section>
     );
 
     if (currentPage === "api") return (
-      /* আগের API Status কোড এখানে থাকবে unchanged */
       <section className="bg-white rounded-2xl shadow p-6 flex flex-col gap-4 items-center">
-        {/* … আগের code 그대로 … */}
+        <h2 className="text-lg font-semibold mb-2">🤖 Bot Status</h2>
+        <img
+          src="https://i.imgur.com/HPWnQI1.jpeg"
+          alt="Bot"
+          className="w-20 h-20 rounded-full mb-2"
+        />
+        <div className="text-sm mb-1">
+          {status.active
+            ? "🟢 Active now"
+            : `⚪ Active ${status.lastActiveMinutes} minute(s) ago`}
+        </div>
+        <div className="text-sm mb-1">📝 Teached Questions: {status.taughtQuestions}</div>
+        <div className="text-sm mb-1">📦 Stored Replies: {status.storedReplies}</div>
+        <div className="text-sm mb-1">👤 Developer: {status.developer}</div>
       </section>
     );
 
