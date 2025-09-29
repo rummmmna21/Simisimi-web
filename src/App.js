@@ -181,35 +181,26 @@ const pushLog = line => {
     }
   };
 
-  const handleDeleteAnswer = async (ask, ans) => {
-    try {
-      const q = new URL(`${apiBase}/delete`);
-      q.searchParams.set("ask", ask);
-      q.searchParams.set("ans", ans);
-      const res = await fetch(q.toString());
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      showToast("Deleted reply", "success");
-      fetchManageData();
-    } catch {
-      showToast("Delete failed", "error");
-    }
-  };
+  // ✅ একেকটা answer delete করার জন্য
+const handleDeleteAnswer = async (ask, ans) => {
+  const q = new URL(`${API}/delete`);
+  q.searchParams.set("ask", ask);
+  q.searchParams.set("ans", ans);
+  const res = await fetch(q.toString(), { method: "DELETE" }); // 🟢 DELETE method
+  const data = await res.json();
+  toast(data.message);
+  getManageData();
+};
 
-  const handleDeleteAsk = async (ask) => {
-    const confirmDelete = window.confirm(`Delete all replies for "${ask}"?`);
-    if (!confirmDelete) return;
-    try {
-      const q = new URL(`${apiBase}/delete`);
-      q.searchParams.set("ask", ask);
-      q.searchParams.set("ans", ""); // সব ans মুছে ফেলবে
-      const res = await fetch(q.toString());
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      showToast("Deleted ask", "success");
-      setManageData([]);
-    } catch {
-      showToast("Delete failed", "error");
-    }
-  };
+// ✅ পুরো ask delete করার জন্য
+const handleDeleteAsk = async (ask) => {
+  const q = new URL(`${API}/delete`);
+  q.searchParams.set("ask", ask);
+  const res = await fetch(q.toString(), { method: "DELETE" }); // 🟢 DELETE method
+  const data = await res.json();
+  toast(data.message);
+  getManageData();
+ };
 
   useEffect(() => {
     if (currentPage === "manage") fetchManageData();
