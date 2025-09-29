@@ -193,14 +193,21 @@ const handleDeleteAnswer = async (ask, ans) => {
 };
 
 // ✅ পুরো ask delete করার জন্য
-const handleDeleteAsk = async (ask) => {
-  const q = new URL(`${API}/delete`);
-  q.searchParams.set("ask", ask);
-  const res = await fetch(q.toString(), { method: "DELETE" }); // 🟢 DELETE method
-  const data = await res.json();
-  toast(data.message);
-  getManageData();
- };
+const handleDeleteQuestion = async (ask) => {
+  const confirmDelete = window.confirm(`Delete "${ask}" and all its replies?`);
+  if (!confirmDelete) return;
+
+  try {
+    const q = new URL(`${apiBase}/delete-question`);
+    q.searchParams.set("ask", ask);
+    const res = await fetch(q.toString(), { method: "DELETE" });
+    const data = await res.json();
+    showToast(data.message, "success");
+    setManageData([]); // refresh list
+  } catch {
+    showToast("Delete failed", "error");
+  }
+};
 
   useEffect(() => {
     if (currentPage === "manage") fetchManageData();
