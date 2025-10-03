@@ -196,20 +196,25 @@ const pushLog = line => {
   };
 
   const handleDeleteAsk = async (ask) => {
-    const confirmDelete = window.confirm(`Delete all replies for "${ask}"?`);
-    if (!confirmDelete) return;
-    try {
-      const q = new URL(`${apiBase}/delete`);
-      q.searchParams.set("ask", ask);
-      q.searchParams.set("ans", ""); // সব ans মুছে ফেলবে
-      const res = await fetch(q.toString());
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      showToast("Deleted ask", "success");
-      setManageData([]);
-    } catch {
-      showToast("Delete failed", "error");
-    }
-  };
+  const confirmDelete = window.confirm(`Delete all replies for "${ask}"?`);
+  if (!confirmDelete) return;
+
+  try {
+    const q = new URL(`${apiBase}/deleteAsk`);
+    q.searchParams.set("ask", ask); // শুধুমাত্র ask সেট করলেই হবে
+
+    const res = await fetch(q.toString(), { method: "DELETE" }); // DELETE method
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+
+    showToast(data.message || "Deleted ask", "success");
+    setManageData([]); // যদি UI refresh করতে চাও
+  } catch (err) {
+    console.error(err);
+    showToast(err.message || "Delete failed", "error");
+  }
+};
 
   useEffect(() => {
     if (currentPage === "manage") fetchManageData();
